@@ -1,10 +1,10 @@
-#XAMPP multihost
+# XAMPP multihost
 
 If you ever want to host (and use) mutiple web sites in single XAMPP installation you can use this tool to 
 create/delete multiple (virtual) hosts that will be accessible via browser.
 
 
-##How to use it?
+## How to use it?
 
 Get and copy xampp-multihost.exe into XAMPP directory (same location where xampp-control.exe is). 
 Program is completely portable and it will find everything from its running directory.
@@ -41,12 +41,12 @@ If you select this item a button "Add to hosts file" will apear. Pressing it you
 
 **NOTE THAT IF YOU ADD/DELETE/MODIFY SOMETHING YOU'll NEED TO RESTART APACHE IN ORDER TO SEE THIS CHANGES**
 
-##Why administrative rights?
+## Why administrative rights?
 
 To succesfully add virtual hosts that can be accessible via web browser, a web address must be added to your system somehow. Program 
 use and modify hosts file (which is located into windows directory) to add virtual hosts entry and for that it need administrative rights
 
-##How to compile? 
+## How to compile? 
 
 Load xampp-multihost.sln into Visual studio 2019 (or similar) and build it. Program use .NET Framework 4.6.1 and have no any other dependencies.
 
