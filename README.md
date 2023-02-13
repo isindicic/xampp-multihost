@@ -6,7 +6,7 @@ create/delete multiple (virtual) hosts that will be accessible via browser.
 
 ## How to use it?
 
-Get and copy xampp-multihost.exe into XAMPP directory (same location where xampp-control.exe is). 
+Get and unpack [xampp-multihost.exe.zip](https://github.com/isindicic/xampp-multihost/releases/download/1.0/xampp-multihost.exe.zip) into XAMPP directory (same location where xampp-control.exe is). 
 Program is completely portable and it will find everything from its running directory.
 
 In upper list box a list of defined virtual hosts is displayed.
