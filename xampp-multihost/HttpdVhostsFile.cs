@@ -15,6 +15,14 @@ namespace SindaSoft.XamppMultihost
         int start;
         int end;
 
+        public string DefaultHomeDir4Conf { 
+                                        get { 
+                                                string r = Path.Combine(parent.xamppDirectory, "htdocs");
+                                                r = r.Substring(2).Replace(@"\", "/");
+                                                return r;
+                                            }
+                                     }
+
         public HttpdVhostsFile(MainForm parent)
         { 
             this.parent = parent;
@@ -35,6 +43,13 @@ namespace SindaSoft.XamppMultihost
         public bool IsDefined(string hostName)
         { 
             string line = vhostsLines.FirstOrDefault( x => x.Trim().StartsWith("ServerName") && x.Trim().EndsWith(hostName));
+            return line != null;
+        }
+
+
+        public bool IsDefaultDefined()
+        { 
+            string line = vhostsLines.FirstOrDefault( x => x.Contains("DocumentRoot") && x.Contains("\"" + this.DefaultHomeDir4Conf + "\""));
             return line != null;
         }
 
@@ -67,6 +82,46 @@ namespace SindaSoft.XamppMultihost
             return retval;
         }
 
+        private void AddDefaultSiteHandler()
+        { 
+            if(!this.IsDefaultDefined())
+            { 
+                List<string> entry = new List<string> ();
+                entry.Add("<VirtualHost *:80>");
+                entry.Add("    DocumentRoot \"" + this.DefaultHomeDir4Conf  + "\"");
+                entry.Add("</VirtualHost>");
+                vhostsLines.InsertRange(start + 1 , entry);
+                end += 3 ;
+                File.WriteAllLines(vhostsFilename, vhostsLines.ToArray());
+            }
+        }
+
+        private void DeleteDefaultSiteHandler()
+        { 
+            string line = vhostsLines.FirstOrDefault( x => x.Contains("DocumentRoot") && x.Contains("\"" + this.DefaultHomeDir4Conf + "\""));
+            if(line != null)
+            { 
+                int idx = vhostsLines.IndexOf(line);
+                if(vhostsLines[idx-1].Trim().StartsWith("<VirtualHost") && vhostsLines[idx+1].Trim().StartsWith("</VirtualHost"))
+                { 
+                    vhostsLines.RemoveRange(idx-1, 3);
+                    end -= 3;
+                    File.WriteAllLines(vhostsFilename, vhostsLines.ToArray());
+                }
+            }
+        }
+
+        private void DeleteDefaultSiteHandlerIfEmpty()
+        { 
+            int cnt = 0;
+            for(int i = start + 1 ; i < end;  i++ )
+                if(vhostsLines[i].Trim().StartsWith("ServerName"))
+                    cnt++;
+
+            if(cnt == 0) // No virtual servers ?! Then delete default vhost rule
+                this.DeleteDefaultSiteHandler();
+        }
+
         public void AddEntry(XamppVirtualHost xvh, bool check4dir = true)
         { 
             List<string> entry = new List<string> ();
@@ -92,6 +147,9 @@ namespace SindaSoft.XamppMultihost
             vhostsLines.InsertRange(start + 1 , entry);
             end += entry.Count;
             File.WriteAllLines(vhostsFilename, vhostsLines.ToArray());
+
+            this.DeleteDefaultSiteHandler();
+            this.AddDefaultSiteHandler();   // This rule must be first !!!!
 
             if(check4dir)
             { 
@@ -127,12 +185,13 @@ namespace SindaSoft.XamppMultihost
                     }
 
                     if(vhEnd != -1)
+                    {
                         vhostsLines.RemoveRange(vhStart, vhEnd - vhStart + 1);
-
-                    end -= vhEnd - vhStart + 1;
-                    File.WriteAllLines(vhostsFilename, vhostsLines.ToArray());
+                        end -= vhEnd - vhStart + 1;
+                        File.WriteAllLines(vhostsFilename, vhostsLines.ToArray());
+                    }
                 }
-
+                this.DeleteDefaultSiteHandlerIfEmpty();
                 return true;
             }
             return false;
